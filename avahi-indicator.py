@@ -20,6 +20,7 @@
 import re
 import os, sys
 import urllib2
+import signal
 
 from gi.repository import Gtk, GLib
 from gi.repository import AppIndicator3 as appindicator
@@ -218,4 +219,5 @@ class MyIndicator:
 
 if __name__ == "__main__":
     indicator = MyIndicator()
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     Gtk.main()
