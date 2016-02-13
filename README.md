@@ -16,7 +16,7 @@ python avahi-indicator.py
 ## TODO
 
  * Create [AppImage](http://appimage.org)
- * Support more services
+ * Support more services (currently the menu shows only service types for which an action is configured (e.g., http(s), ssh, sftp-ssh, smb)
  * Test on other GNOME systems than Ubuntu
  * Sort menu (by service type and name)
  * Remove services from the menu that are no longer there
