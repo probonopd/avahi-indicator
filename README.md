@@ -16,7 +16,12 @@ python avahi-indicator.py
 
 ## TODO
 
+Pull requests welcome!
+
  * Create [AppImage](http://appimage.org)
+ * Solve [org.freedesktop.Avahi.TimeoutError](https://lists.freedesktop.org/archives/avahi/2010-May/001886.html)
+ * Sort list of service names in the menu, and sort list of services in the menu
+ * If a service is announced on the network after avahi-indicator is already launched, then a popup notification should appear, informing about the new service. However apparently avahi-indicator does not get informed (yet) when new services appear on the network after avahi-indicator has been launched (FIXME)
  * Support more services (currently the menu shows only service types for which an action is configured (e.g., http(s), ssh, sftp-ssh, smb)
  * Test on other GNOME systems than Ubuntu
  * Sort menu (by service type and name)
