@@ -8,7 +8,8 @@ Indicator that shows services advertised on the network with Zeroconf/Bonjour/Av
 As long as an [AppImage](http://appimage.org) does not exist yet, the simplest way on Ubuntu is
 
 ```
-sudo apt-get install avahi-discover
+sudo apt-get update
+sudo apt-get -y install avahi-discover
 wget https://raw.githubusercontent.com/probonopd/avahi-indicator/master/avahi-indicator.py
 python avahi-indicator.py
 ```
