@@ -34,19 +34,69 @@ try:
 except ImportError, e:
     pass
 
+from collections import OrderedDict
+
+from gi.repository import Notify
+
+import time
+
+servicesdb = "/usr/share/avahi/service-types"
+
 service_type_browsers = {}
 service_browsers = {}
+
+class Service(object):
+
+    def __init__(self, interface, protocol, name, stype, domain, host, aprotocol, address, port, txt, flags):
+        self.interface = interface
+        self.protocol = protocol
+        self.name = name
+        self.stype = stype
+        self.domain = domain
+        self.host = host
+        self.aprotocol = aprotocol
+        self.address = address
+        self.port = port
+        self.txt = txt
+        self.flags = flags
+        self.command=None
+
+	if(self.stype=="_http._tcp"):
+		path=""
+		for data in avahi.txt_array_to_string_array(self.txt):
+			if (data.startswith("path=")):
+				path = data[len("path="):]
+		self.command="xdg-open http://%s:%i%s &" % (self.host, self.port, path)
+
+	if(self.stype=="_https._tcp"):
+		path=""
+		for data in avahi.txt_array_to_string_array(self.txt):
+			if (data.startswith("path=")):
+				path = data[len("path="):]
+		self.command="xdg-open https://%s:%i%s &" % (self.host, self.port, path)
+
+	if(self.stype=="_ssh._tcp"):
+		self.command="gnome-terminal -x ssh %s %i &" % (self.host, self.port)
+		# TODO: Ask for username and password
+
+	if(self.stype=="_sftp-ssh._tcp"):
+		self.command="nautilus ssh://%s:%i &" % (self.host, self.port)
+
+	if(self.stype=="_smb._tcp"):
+		self.command="nautilus smb://%s:%i &" % (self.host, self.port)
 
 class MyIndicator:
 
     def __init__(self):
     # Create Indicator with icon and label
         icon_image = "/usr/share/unity/icons/panel-shadow.png"
+        self.start_time = time.clock()
         self.ind = appindicator.Indicator.new(
             "MagicNumber",
             icon_image,
             appindicator.IndicatorCategory.APPLICATION_STATUS
         )
+        self.services = []
         self.ind.set_status(appindicator.IndicatorStatus.ACTIVE)
         self.menu_structure()
         self.new()
@@ -73,49 +123,56 @@ class MyIndicator:
     def service_resolved(self, interface, protocol, name, stype, domain, host, aprotocol, address, port, txt, flags):
         print "Service data for service '%s' of type '%s' in domain '%s' on %i.%i:" % (name, stype, domain, interface, protocol)
         print "\tHost %s (%s), port %i, TXT data: %s" % (host, address, port, str(avahi.txt_array_to_string_array(txt)))
+        self.services.append(Service(interface, protocol, name, stype, domain, host, aprotocol, address, port, txt, flags))
+        secs_since_launch = (time.clock() - self.start_time)/60
+        print("\t" + str(secs_since_launch) + " secs since launch")
+        # Services that are added after 2 seconds after launch trigger a notification 
+        if (secs_since_launch > 2.0):
+            Notify.init("Avahi")
+            Hello=Notify.Notification.new(name, stype, "dialog-information")
+            Hello.show()
+        self.rebuild_menu()
 
-        command=None
+    def rebuild_menu(self):
 
-	if(stype=="_http._tcp"):
-		path=""
-		for data in avahi.txt_array_to_string_array(txt):
-			if (data.startswith("path=")):
-				path = data[len("path="):]
-		command="xdg-open http://%s:%i%s &" % (host, port, path)
+        # TODO: Sort both the service names and the menu items for each service name
 
-	if(stype=="_https._tcp"):
-		path=""
-		for data in avahi.txt_array_to_string_array(txt):
-			if (data.startswith("path=")):
-				path = data[len("path="):]
-		command="xdg-open https://%s:%i%s &" % (host, port, path)
+        for i in self.menu.get_children():
+            self.menu.remove(i)
 
-	if(stype=="_ssh._tcp"):
-		command="gnome-terminal -x ssh %s %i &" % (host, port)
-		# TODO: Ask for username and password
+	stypes = []
+        for service in self.services:
+            stypes.append(service.stype)
+        stypes = list(OrderedDict.fromkeys(stypes)) # Remove duplicates
 
-	if(stype=="_sftp-ssh._tcp"):
-		command="nautilus ssh://%s:%i &" % (host, port)
-
-	if(stype=="_smb._tcp"):
-		command="nautilus smb://%s:%i &" % (host, port)
-
-        self.menuitem = Gtk.MenuItem(name + " " + stype.split(".")[0].replace("_",""))
-        self.menuitem.connect("activate", self.run, command)
-        self.menuitem.show()
-        if(command != None):
-            self.menu.append(self.menuitem)
+        for stype in stypes:
+            service_cleartext = self.lookup_type(stype)
+            if not ((service_cleartext.startswith("_") or (service_cleartext.startswith("Workstation")))):
+                self.menuitem = Gtk.MenuItem(service_cleartext)
+                self.menuitem.set_sensitive(False)
+                # self.menuitem.connect("activate", self.run, service.command)
+                self.menuitem.show()
+                self.menu.append(Gtk.SeparatorMenuItem())
+                self.menu.append(self.menuitem)
+                for service in self.services:
+                    if(service.stype == stype):
+                        self.menuitem = Gtk.MenuItem(service.name)
+                        self.menuitem.connect("activate", self.run, service.command)
+                        self.menuitem.show()
+                        self.menu.append(self.menuitem)
+        self.menu.show_all()
 
     def print_error(self, err):
         print "Error:", str(err)
 
     def lookup_type(self, stype):
-        global service_type_db
+        
+        with open(servicesdb) as f:
+            for line in f:
+                if line.startswith(stype + ":"):
+                    return line.split(":")[1].strip()
 
-        try:
-            return service_type_db[stype]
-        except KeyError:
-            return stype
+        return stype
 
     def run(self, sender, command):
         print(command)
