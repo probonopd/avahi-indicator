@@ -1,5 +1,5 @@
 # avahi-indicator
-[AppIndicator](https://unity.ubuntu.com/projects/appindicators/) that shows services advertised on the network with Zeroconf/Bonjour/Avahi, written in Python
+avahi-indicator is an [AppIndicator](https://unity.ubuntu.com/projects/appindicators/) that shows services advertised on the network with Zeroconf/Bonjour/Avahi, written in Python. Network services show up in the Ubuntu menu bar, and you can choose a service from a dropdown menu. This will open the corresponding service (e.g., opens a web browser, a SSH shell, a SFTP connection, etc.)
 
 ![menu](https://cloud.githubusercontent.com/assets/2480569/13030383/223c9c06-d2a9-11e5-8760-4f5e6d63856f.jpg)
 
