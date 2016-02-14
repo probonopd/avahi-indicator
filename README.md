@@ -9,7 +9,7 @@ As long as an [AppImage](http://appimage.org) does not exist yet, the simplest w
 
 ```
 sudo apt-get update
-sudo apt-get -y install avahi-discover
+sudo apt-get -y install avahi-daemon python2.7 python-avahi python-dbus
 wget https://raw.githubusercontent.com/probonopd/avahi-indicator/master/avahi-indicator.py
 python avahi-indicator.py
 ```
