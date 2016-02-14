@@ -1,5 +1,5 @@
 # avahi-indicator
-Indicator that shows services advertised on the network with Zeroconf/Bonjour/Avahi, written in Python
+[AppIndicator](https://unity.ubuntu.com/projects/appindicators/) that shows services advertised on the network with Zeroconf/Bonjour/Avahi, written in Python
 
 ![menu](https://cloud.githubusercontent.com/assets/2480569/13030383/223c9c06-d2a9-11e5-8760-4f5e6d63856f.jpg)
 
